@@ -57,6 +57,10 @@ func ReproviderCtor(mctx MetricsCtx, lc fx.Lifecycle, cfg *config.Config, bs Bas
 	return deprecated.NewReprovider(lifecycleCtx(mctx, lc), rt, keyProvider), nil
 }
 
+func ProviderSysCtor(mctx MetricsCtx, lc fx.Lifecycle, p provider.Provider, r provider.Reprovider) provider.System {
+  return provider.NewSystem(p, r)
+}
+
 func Reprovider(cfg *config.Config, reprovider *deprecated.Reprovider) error {
 	reproviderInterval := kReprovideFrequency
 	if cfg.Reprovider.Interval != "" {
