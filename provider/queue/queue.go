@@ -1,4 +1,4 @@
-package provider
+package queue
 
 import (
 	"context"
@@ -6,11 +6,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/ipfs/go-cid"
-	"github.com/ipfs/go-datastore"
-	"github.com/ipfs/go-datastore/namespace"
-	"github.com/ipfs/go-datastore/query"
+	cid "github.com/ipfs/go-cid"
+	datastore "github.com/ipfs/go-datastore"
+	namespace "github.com/ipfs/go-datastore/namespace"
+	query "github.com/ipfs/go-datastore/query"
+	logging "github.com/ipfs/go-log"
 )
+
+var log = logging.Logger("provider.queue")
 
 // Queue provides a durable, FIFO interface to the datastore for storing cids
 //

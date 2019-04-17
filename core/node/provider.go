@@ -10,19 +10,20 @@ import (
 	"github.com/libp2p/go-libp2p-routing"
 	"go.uber.org/fx"
 
-	"github.com/ipfs/go-ipfs/provider/deprecated"
 	"github.com/ipfs/go-ipfs/pin"
 	"github.com/ipfs/go-ipfs/provider"
+	"github.com/ipfs/go-ipfs/provider/deprecated"
+	q "github.com/ipfs/go-ipfs/provider/queue"
 	"github.com/ipfs/go-ipfs/repo"
 )
 
 const kReprovideFrequency = time.Hour * 12
 
-func ProviderQueue(mctx MetricsCtx, lc fx.Lifecycle, repo repo.Repo) (*provider.Queue, error) {
-	return provider.NewQueue(lifecycleCtx(mctx, lc), "provider-v1", repo.Datastore())
+func ProviderQueue(mctx MetricsCtx, lc fx.Lifecycle, repo repo.Repo) (*q.Queue, error) {
+	return q.NewQueue(lifecycleCtx(mctx, lc), "provider-v1", repo.Datastore())
 }
 
-func ProviderCtor(mctx MetricsCtx, lc fx.Lifecycle, queue *provider.Queue, rt routing.IpfsRouting) provider.Provider {
+func ProviderCtor(mctx MetricsCtx, lc fx.Lifecycle, queue *q.Queue, rt routing.IpfsRouting) provider.Provider {
 	p := deprecated.NewProvider(lifecycleCtx(mctx, lc), queue, rt)
 
 	lc.Append(fx.Hook{
