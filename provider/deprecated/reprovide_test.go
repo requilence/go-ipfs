@@ -1,18 +1,18 @@
-package reprovide_test
+package deprecated_test
 
 import (
 	"context"
 	"testing"
 
 	blocks "github.com/ipfs/go-block-format"
+	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	ds "github.com/ipfs/go-datastore"
 	dssync "github.com/ipfs/go-datastore/sync"
-	blockstore "github.com/ipfs/go-ipfs-blockstore"
 	mock "github.com/ipfs/go-ipfs-routing/mock"
 	pstore "github.com/libp2p/go-libp2p-peerstore"
 	testutil "github.com/libp2p/go-testutil"
 
-	. "github.com/ipfs/go-ipfs/exchange/reprovide"
+	. "github.com/ipfs/go-ipfs/provider/deprecated"
 )
 
 func TestReprovide(t *testing.T) {
