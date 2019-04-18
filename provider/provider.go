@@ -16,7 +16,11 @@ import (
 	q "github.com/ipfs/go-ipfs/provider/queue"
 )
 
-var log = logging.Logger("provider")
+var (
+	UseExperimentalSystem = false
+
+	log = logging.Logger("provider")
+)
 
 // Provider announces blocks to the network
 type Provider interface {
@@ -38,27 +42,35 @@ type Reprovider interface {
 
 // NewConfiguredProvider returns either the deprecated or the experimental provider
 func NewConfiguredProvider(ctx context.Context, name string, datastore datastore.Datastore, routing routing.ContentRouting) (Provider, error) {
-	queue, err := q.NewQueue(ctx, name, datastore)
-	if err != nil {
-		return nil, err
+	if UseExperimentalSystem {
+        return nil, nil
+	} else {
+		queue, err := q.NewQueue(ctx, name, datastore)
+		if err != nil {
+			return nil, err
+		}
+		return deprecated.NewProvider(ctx, queue, routing), nil
 	}
-	return deprecated.NewProvider(ctx, queue, routing), nil
 }
 
 // NewConfiguredReprovider returns either the deprecated or the experimental reprovider
 func NewConfiguredReprovider(ctx context.Context, routing routing.ContentRouting, blockstore blockstore.Blockstore, pinning pin.Pinner, dag ipld.DAGService, strategy string) (Reprovider, error) {
-	var keyProvider deprecated.KeyChanFunc
-	switch strategy {
-	case "all":
-		fallthrough
-	case "":
-		keyProvider = deprecated.NewBlockstoreProvider(blockstore)
-	case "roots":
-		keyProvider = deprecated.NewPinnedProvider(pinning, dag, true)
-	case "pinned":
-		keyProvider = deprecated.NewPinnedProvider(pinning, dag, false)
-	default:
-		return nil, fmt.Errorf("unknown reprovider strategy '%s'", strategy)
+	if UseExperimentalSystem {
+		return nil, nil
+	} else {
+		var keyProvider deprecated.KeyChanFunc
+		switch strategy {
+		case "all":
+			fallthrough
+		case "":
+			keyProvider = deprecated.NewBlockstoreProvider(blockstore)
+		case "roots":
+			keyProvider = deprecated.NewPinnedProvider(pinning, dag, true)
+		case "pinned":
+			keyProvider = deprecated.NewPinnedProvider(pinning, dag, false)
+		default:
+			return nil, fmt.Errorf("unknown reprovider strategy '%s'", strategy)
+		}
+		return deprecated.NewReprovider(ctx, routing, keyProvider), nil
 	}
-	return deprecated.NewReprovider(ctx, routing, keyProvider), nil
 }
