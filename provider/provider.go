@@ -30,7 +30,9 @@ type Provider interface {
 
 // Reprovider reannounces blocks to the network
 type Reprovider interface {
+	// Run is used to begin processing the reprovider work and waiting for reprovide triggers
 	Run(time.Duration)
+	// Trigger a reprovide
 	Trigger(context.Context) error
 }
 
