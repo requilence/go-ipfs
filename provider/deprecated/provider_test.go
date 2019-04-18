@@ -1,4 +1,4 @@
-package provider
+package deprecated_test
 
 import (
 	"context"
@@ -6,11 +6,14 @@ import (
 	"testing"
 	"time"
 
+	blocksutil "github.com/ipfs/go-ipfs-blocksutil"
 	cid "github.com/ipfs/go-cid"
 	datastore "github.com/ipfs/go-datastore"
-	sync "github.com/ipfs/go-datastore/sync"
-	blocksutil "github.com/ipfs/go-ipfs-blocksutil"
 	pstore "github.com/libp2p/go-libp2p-peerstore"
+	sync "github.com/ipfs/go-datastore/sync"
+	provider "github.com/ipfs/go-ipfs/provider"
+
+	. "github.com/ipfs/go-ipfs/provider/deprecated"
 )
 
 var blockGenerator = blocksutil.NewBlockGenerator()
@@ -39,15 +42,15 @@ func TestAnnouncement(t *testing.T) {
 	defer ctx.Done()
 
 	ds := sync.MutexWrap(datastore.NewMapDatastore())
-	queue, err := NewQueue(ctx, "test", ds)
+	queue, err := provider.NewQueue(ctx, "test", ds)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	r := mockContentRouting()
 
-	provider := NewProvider(ctx, queue, r)
-	provider.Run()
+	prov := NewProvider(ctx, queue, r)
+	prov.Run()
 
 	cids := cid.NewSet()
 
@@ -58,7 +61,7 @@ func TestAnnouncement(t *testing.T) {
 
 	go func() {
 		for _, c := range cids.Keys() {
-			err = provider.Provide(c)
+			err = prov.Provide(c)
 			// A little goroutine stirring to exercise some different states
 			r := rand.Intn(10)
 			time.Sleep(time.Microsecond * time.Duration(r))

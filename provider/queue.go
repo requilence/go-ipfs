@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"strings"
 
-	cid "github.com/ipfs/go-cid"
-	datastore "github.com/ipfs/go-datastore"
-	namespace "github.com/ipfs/go-datastore/namespace"
-	query "github.com/ipfs/go-datastore/query"
+	"github.com/ipfs/go-cid"
+	"github.com/ipfs/go-datastore"
+	"github.com/ipfs/go-datastore/namespace"
+	"github.com/ipfs/go-datastore/query"
 )
 
 // Queue provides a durable, FIFO interface to the datastore for storing cids

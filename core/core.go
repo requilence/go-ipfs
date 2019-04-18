@@ -18,7 +18,7 @@ import (
 	version "github.com/ipfs/go-ipfs"
 	"github.com/ipfs/go-ipfs/core/bootstrap"
 	"github.com/ipfs/go-ipfs/core/node"
-	rp "github.com/ipfs/go-ipfs/exchange/reprovide"
+	rp "github.com/ipfs/go-ipfs/provider/deprecated"
 	"github.com/ipfs/go-ipfs/filestore"
 	"github.com/ipfs/go-ipfs/fuse/mount"
 	"github.com/ipfs/go-ipfs/namesys"
