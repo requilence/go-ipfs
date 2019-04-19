@@ -1,7 +1,7 @@
 // Package provider implements structures and methods to provide blocks,
 // keep track of which blocks are provided, and to allow those blocks to
 // be reprovided.
-package deprecated
+package simple
 
 import (
 	"context"

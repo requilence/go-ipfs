@@ -12,7 +12,7 @@ import (
 
 	"github.com/ipfs/go-ipfs/pin"
 	"github.com/ipfs/go-ipfs/provider"
-	"github.com/ipfs/go-ipfs/provider/deprecated"
+	"github.com/ipfs/go-ipfs/provider/simple"
 	q "github.com/ipfs/go-ipfs/provider/queue"
 	"github.com/ipfs/go-ipfs/repo"
 )
@@ -29,22 +29,22 @@ func ProviderSysCtor(mctx MetricsCtx, lc fx.Lifecycle, cfg *config.Config, repo 
 		return nil, err
 	}
 
-	p := deprecated.NewProvider(lifecycleCtx(mctx, lc), queue, rt)
+	p := simple.NewProvider(lifecycleCtx(mctx, lc), queue, rt)
 
-	var keyProvider deprecated.KeyChanFunc
+	var keyProvider simple.KeyChanFunc
 	switch cfg.Reprovider.Strategy {
 	case "all":
 		fallthrough
 	case "":
-		keyProvider = deprecated.NewBlockstoreProvider(bs)
+		keyProvider = simple.NewBlockstoreProvider(bs)
 	case "roots":
-		keyProvider = deprecated.NewPinnedProvider(pinning, ds, true)
+		keyProvider = simple.NewPinnedProvider(pinning, ds, true)
 	case "pinned":
-		keyProvider = deprecated.NewPinnedProvider(pinning, ds, false)
+		keyProvider = simple.NewPinnedProvider(pinning, ds, false)
 	default:
 		return nil, fmt.Errorf("unknown reprovider strategy '%s'", cfg.Reprovider.Strategy)
 	}
-	r := deprecated.NewReprovider(lifecycleCtx(mctx, lc), rt, keyProvider)
+	r := simple.NewReprovider(lifecycleCtx(mctx, lc), rt, keyProvider)
 
     sys := provider.NewSystem(p, r)
 

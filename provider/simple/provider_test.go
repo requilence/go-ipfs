@@ -1,4 +1,4 @@
-package deprecated_test
+package simple_test
 
 import (
 	"context"
