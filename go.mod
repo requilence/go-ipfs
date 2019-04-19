@@ -127,5 +127,5 @@ go 1.12
 
 replace (
 	github.com/ipfs/go-bitswap v0.0.4 => ../go-bitswap
-	github.com/ipfs/go-ipfs-config v0.0.1 => ../go-ipfs-config
+	github.com/ipfs/go-ipfs-config v0.0.2 => ../go-ipfs-config
 )
