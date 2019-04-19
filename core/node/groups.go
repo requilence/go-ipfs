@@ -3,11 +3,9 @@ package node
 import (
 	"context"
 
-	"github.com/ipfs/go-ipfs/p2p"
-	"github.com/ipfs/go-ipfs/provider"
-
-	offline "github.com/ipfs/go-ipfs-exchange-offline"
+	"github.com/ipfs/go-ipfs-exchange-offline"
 	offroute "github.com/ipfs/go-ipfs-routing/offline"
+	"github.com/ipfs/go-ipfs/p2p"
 	"github.com/ipfs/go-path/resolver"
 	"go.uber.org/fx"
 )
@@ -69,14 +67,6 @@ var IPNS = fx.Options(
 	fx.Provide(RecordValidator),
 )
 
-var Providers = fx.Options(
-	fx.Provide(ProviderQueue),
-	fx.Provide(ProviderCtor),
-	fx.Provide(ReproviderCtor),
-
-	fx.Invoke(Reprovider),
-)
-
 func Online(cfg *BuildCfg) fx.Option {
 	return fx.Options(
 		fx.Provide(OnlineExchangeCtor),
@@ -87,7 +77,8 @@ func Online(cfg *BuildCfg) fx.Option {
 		fx.Provide(p2p.NewP2P),
 
 		LibP2P(cfg),
-		Providers,
+
+		fx.Provide(OnlineProviderSysCtor),
 	)
 }
 
@@ -95,7 +86,7 @@ var Offline = fx.Options(
 	fx.Provide(offline.Exchange),
 	fx.Provide(OfflineNamesysCtor),
 	fx.Provide(offroute.NewOfflineRouter),
-	fx.Provide(provider.NewOfflineProvider),
+	fx.Provide(OfflineProviderSysCtor),
 )
 
 var Core = fx.Options(

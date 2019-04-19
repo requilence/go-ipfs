@@ -92,7 +92,7 @@ type IpfsNode struct {
 	Routing      routing.IpfsRouting `optional:"true"` // the routing system. recommend ipfs-dht
 	Exchange     exchange.Interface  // the block exchange + strategy (bitswap)
 	Namesys      namesys.NameSystem  // the name system, resolves paths to hashes
-	Provider     provider.System     `optional:"true"` // the value provider system
+	Provider     provider.System     // the value provider system
 	IpnsRepub    *ipnsrp.Republisher `optional:"true"`
 
 	AutoNAT  *autonat.AutoNATService    `optional:"true"`

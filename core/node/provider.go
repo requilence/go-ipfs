@@ -19,29 +19,19 @@ import (
 
 const kReprovideFrequency = time.Hour * 12
 
-func ProviderQueue(mctx MetricsCtx, lc fx.Lifecycle, repo repo.Repo) (*q.Queue, error) {
-	return q.NewQueue(lifecycleCtx(mctx, lc), "provider-v1", repo.Datastore())
-}
+func ProviderSysCtor(mctx MetricsCtx, lc fx.Lifecycle, cfg *config.Config, repo repo.Repo, bs BaseBlocks, ds format.DAGService, pinning pin.Pinner, rt routing.IpfsRouting) (provider.System, error) {
+	if cfg.Experimental.ProviderSystemEnabled {
+        return provider.NewOfflineProvider(), nil
+	}
 
-func ProviderCtor(mctx MetricsCtx, lc fx.Lifecycle, queue *q.Queue, rt routing.IpfsRouting) provider.Provider {
+	queue, err := q.NewQueue(lifecycleCtx(mctx, lc), "provider-v1", repo.Datastore())
+	if err != nil {
+		return nil, err
+	}
+
 	p := deprecated.NewProvider(lifecycleCtx(mctx, lc), queue, rt)
 
-	lc.Append(fx.Hook{
-		OnStart: func(ctx context.Context) error {
-			p.Run()
-			return nil
-		},
-		OnStop: func(ctx context.Context) error {
-			return p.Close()
-		},
-	})
-
-	return p
-}
-
-func ReproviderCtor(mctx MetricsCtx, lc fx.Lifecycle, cfg *config.Config, bs BaseBlocks, ds format.DAGService, pinning pin.Pinner, rt routing.IpfsRouting) (*deprecated.Reprovider, error) {
 	var keyProvider deprecated.KeyChanFunc
-
 	switch cfg.Reprovider.Strategy {
 	case "all":
 		fallthrough
@@ -54,24 +44,43 @@ func ReproviderCtor(mctx MetricsCtx, lc fx.Lifecycle, cfg *config.Config, bs Bas
 	default:
 		return nil, fmt.Errorf("unknown reprovider strategy '%s'", cfg.Reprovider.Strategy)
 	}
-	return deprecated.NewReprovider(lifecycleCtx(mctx, lc), rt, keyProvider), nil
+	r := deprecated.NewReprovider(lifecycleCtx(mctx, lc), rt, keyProvider)
+
+    sys := provider.NewSystem(p, r)
+
+	return sys, nil
 }
 
-func ProviderSysCtor(mctx MetricsCtx, lc fx.Lifecycle, p provider.Provider, r provider.Reprovider) provider.System {
-  return provider.NewSystem(p, r)
-}
+func OnlineProviderSysCtor(mctx MetricsCtx, lc fx.Lifecycle, cfg *config.Config, repo repo.Repo, bs BaseBlocks, ds format.DAGService, pinning pin.Pinner, rt routing.IpfsRouting) (provider.System, error) {
+	sys, err := ProviderSysCtor(mctx, lc, cfg, repo, bs, ds, pinning, rt)
+	if err != nil {
+		return nil, err
+	}
 
-func Reprovider(cfg *config.Config, reprovider *deprecated.Reprovider) error {
 	reproviderInterval := kReprovideFrequency
 	if cfg.Reprovider.Interval != "" {
 		dur, err := time.ParseDuration(cfg.Reprovider.Interval)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		reproviderInterval = dur
 	}
 
-	go reprovider.Run(reproviderInterval)
-	return nil
+	lc.Append(fx.Hook{
+		OnStart: func(ctx context.Context) error {
+			go sys.Run(reproviderInterval)
+			return nil
+		},
+		OnStop: func(ctx context.Context) error {
+			return sys.Close()
+		},
+	})
+
+	return sys, nil
 }
+
+func OfflineProviderSysCtor(mctx MetricsCtx, lc fx.Lifecycle, cfg *config.Config, repo repo.Repo, bs BaseBlocks, ds format.DAGService, pinning pin.Pinner, rt routing.IpfsRouting) (provider.System, error) {
+	return ProviderSysCtor(mctx, lc, cfg, repo, bs, ds, pinning, rt)
+}
+

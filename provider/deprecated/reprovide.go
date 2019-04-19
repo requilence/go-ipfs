@@ -44,6 +44,10 @@ func NewReprovider(ctx context.Context, rsys routing.ContentRouting, keyProvider
 	}
 }
 
+func (rp *Reprovider) Close() error {
+	return nil
+}
+
 // Run re-provides keys with 'tick' interval or when triggered
 func (rp *Reprovider) Run(tick time.Duration) {
 	// dont reprovide immediately.

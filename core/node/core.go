@@ -3,6 +3,7 @@ package node
 import (
 	"context"
 	"fmt"
+	"github.com/ipfs/go-ipfs-config"
 
 	"github.com/ipfs/go-ipfs/pin"
 	"github.com/ipfs/go-ipfs/repo"
@@ -54,8 +55,10 @@ func DagCtor(bs blockservice.BlockService) format.DAGService {
 	return merkledag.NewDAGService(bs)
 }
 
-func OnlineExchangeCtor(mctx MetricsCtx, lc fx.Lifecycle, host host.Host, rt routing.IpfsRouting, bs blockstore.GCBlockstore) exchange.Interface {
+func OnlineExchangeCtor(mctx MetricsCtx, lc fx.Lifecycle, host host.Host, rt routing.IpfsRouting, bs blockstore.GCBlockstore, cfg *config.Config) exchange.Interface {
 	bitswapNetwork := network.NewFromIpfsHost(host, rt)
+	// TODO: where should this go?
+	bitswap.ProvideDisabled = cfg.Experimental.ProviderSystemEnabled
 	exch := bitswap.New(lifecycleCtx(mctx, lc), bitswapNetwork, bs)
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
