@@ -20,7 +20,7 @@ import (
 const kReprovideFrequency = time.Hour * 12
 
 func ProviderSysCtor(mctx MetricsCtx, lc fx.Lifecycle, cfg *config.Config, repo repo.Repo, bs BaseBlocks, ds format.DAGService, pinning pin.Pinner, rt routing.IpfsRouting) (provider.System, error) {
-	if cfg.Experimental.ProviderSystemEnabled {
+	if cfg.Experimental.StrategicProviding {
         return provider.NewOfflineProvider(), nil
 	}
 

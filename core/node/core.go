@@ -58,7 +58,7 @@ func DagCtor(bs blockservice.BlockService) format.DAGService {
 func OnlineExchangeCtor(mctx MetricsCtx, lc fx.Lifecycle, host host.Host, rt routing.IpfsRouting, bs blockstore.GCBlockstore, cfg *config.Config) exchange.Interface {
 	bitswapNetwork := network.NewFromIpfsHost(host, rt)
 	// TODO: where should this go?
-	bitswap.ProvideDisabled = cfg.Experimental.ProviderSystemEnabled
+	bitswap.ProvideEnabled = cfg.Experimental.StrategicProviding
 	exch := bitswap.New(lifecycleCtx(mctx, lc), bitswapNetwork, bs)
 	lc.Append(fx.Hook{
 		OnStop: func(ctx context.Context) error {
