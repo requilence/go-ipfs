@@ -183,12 +183,16 @@ func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption Routin
 
 	swarmkey, err := n.Repo.SwarmKey()
 	if err != nil {
+		log.Errorf("SwarmKey error: %s", err.Error())
 		return err
 	}
+	log.Errorf("SwarmKey ok")
 
 	if swarmkey != nil {
 		protec, err := pnet.NewProtector(bytes.NewReader(swarmkey))
 		if err != nil {
+			log.Errorf("SwarmKey NewProtector error: %s", err.Error())
+
 			return fmt.Errorf("failed to configure private network: %s", err)
 		}
 		n.PNetFingerprint = protec.Fingerprint()
