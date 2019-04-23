@@ -152,6 +152,7 @@ type Mounts struct {
 }
 
 func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption RoutingOption, hostOption HostOption, do DiscoveryOption, pubsub, ipnsps, mplex bool) error {
+	log.Errorf("startOnlineServices")
 	if n.PeerHost != nil { // already online.
 		return errors.New("node already online")
 	}
@@ -186,7 +187,7 @@ func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption Routin
 		log.Errorf("SwarmKey error: %s", err.Error())
 		return err
 	}
-	log.Errorf("SwarmKey ok")
+	log.Errorf("SwarmKey ok: %s", string(swarmkey))
 
 	if swarmkey != nil {
 		protec, err := pnet.NewProtector(bytes.NewReader(swarmkey))
@@ -214,6 +215,7 @@ func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption Routin
 				}
 			}
 		}()
+		log.Errorf("libp2pOpts append")
 
 		libp2pOpts = append(libp2pOpts, libp2p.PrivateNetwork(protec))
 	}
