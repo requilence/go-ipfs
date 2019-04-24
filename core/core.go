@@ -184,16 +184,14 @@ func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption Routin
 
 	swarmkey, err := n.Repo.SwarmKey()
 	if err != nil {
-		log.Errorf("SwarmKey error: %s", err.Error())
 		return err
 	}
-	log.Errorf("SwarmKey ok: %s", string(swarmkey))
+
+	var pnetOption libp2p.Option
 
 	if swarmkey != nil {
 		protec, err := pnet.NewProtector(bytes.NewReader(swarmkey))
 		if err != nil {
-			log.Errorf("SwarmKey NewProtector error: %s", err.Error())
-
 			return fmt.Errorf("failed to configure private network: %s", err)
 		}
 		n.PNetFingerprint = protec.Fingerprint()
@@ -215,9 +213,9 @@ func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption Routin
 				}
 			}
 		}()
-		log.Errorf("libp2pOpts append")
 
-		libp2pOpts = append(libp2pOpts, libp2p.PrivateNetwork(protec))
+		pnetOption = libp2p.PrivateNetwork(protec)
+		libp2pOpts = append(libp2pOpts, pnetOption)
 	}
 
 	addrsFactory, err := makeAddrsFactory(cfg.Addresses)
@@ -282,7 +280,7 @@ func (n *IpfsNode) startOnlineServices(ctx context.Context, routingOption Routin
 
 	n.PeerHost = peerhost
 
-	if err := n.startOnlineServicesWithHost(ctx, routingOption, pubsub, ipnsps); err != nil {
+	if err := n.startOnlineServicesWithHost(ctx, routingOption, pubsub, ipnsps, pnetOption); err != nil {
 		return err
 	}
 
@@ -482,7 +480,7 @@ func (n *IpfsNode) HandlePeerFound(p pstore.PeerInfo) {
 
 // startOnlineServicesWithHost  is the set of services which need to be
 // initialized with the host and _before_ we start listening.
-func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOption RoutingOption, enablePubsub bool, enableIpnsps bool) error {
+func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOption RoutingOption, enablePubsub bool, enableIpnsps bool, pnetOption libp2p.Option) error {
 	cfg, err := n.Repo.Config()
 	if err != nil {
 		return err
@@ -492,6 +490,10 @@ func (n *IpfsNode) startOnlineServicesWithHost(ctx context.Context, routingOptio
 		var opts []libp2p.Option
 		if cfg.Experimental.QUIC {
 			opts = append(opts, libp2p.DefaultTransports, libp2p.Transport(quic.NewTransport))
+		}
+
+		if pnetOption != nil {
+			opts = append(opts, pnetOption)
 		}
 
 		svc, err := autonat.NewAutoNATService(ctx, n.PeerHost, opts...)
